@@ -17,6 +17,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use('/api', routes);
+app.use('/api', routes);
 app.use('/devices', devices);
 
 // catch 404 and forward to error handler

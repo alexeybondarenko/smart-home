@@ -18,15 +18,15 @@ router.get('/', function(req, res, next) {
 router.post('/', function (req, res, next) {
     debug('insert device');
     mysql.connection(function (err, connection) {
-        if (err) next(err);
+        if (err) return next(err);
         connection.query('INSERT INTO `devices` (`id`, `title`, `description`) VALUES (NULL, ?, ?)',[req.body.title, req.body.description], function (err, rows, fields) {
             if (err) {
                 connection.release();
-                next(err);
+                return next(err);
             }
             connection.query('SELECT * FROM `devices` WHERE `id`= LAST_INSERT_ID()', function (err, rows) {
                 connection.release();
-                if (err) next(err);
+                if (err) return next(err);
                 res.json(rows[0])
             });
         })
@@ -38,7 +38,7 @@ router.get('/:id', function (req, res, next) {
         if (err) next(err);
         connection.query('SELECT * FROM `devices` WHERE id = ?',[req.params.id], function (err, rows, fields) {
             connection.release();
-            if (err) next(err);
+            if (err) return next(err);
             res.json(rows[0] || {});
         })
     });
@@ -50,7 +50,25 @@ router.put('/:id', function (req, res, next) {
         connection.query('UPDATE `devices` SET ? WHERE id = ?',[{title: req.body.title, description: req.body.description}, req.params.id], function (err, rows, fields) {
             if (err) {
                 connection.release();
+                return next(err);
+            }
+            connection.query('SELECT * FROM `devices` WHERE `id`= ?', [req.params.id], function (err, rows) {
+                connection.release();
+                if (err) return next(err);
+                res.json(rows[0]);
+            });
+        })
+    });
+});
+router.put('/:id', function (req, res, next) {
+    debug('device update with id', req.params.id);
+    mysql.connection(function (err, connection) {
+        if (err) next(err);
+        connection.query('UPDATE `devices` SET ? WHERE id = ?',[{title: req.body.title, description: req.body.description}, req.params.id], function (err, rows, fields) {
+            connection.release();
+            if (err) {
                 next(err);
+                return;
             }
             connection.query('SELECT * FROM `devices` WHERE `id`= ?', [req.params.id], function (err, rows) {
                 connection.release();
@@ -60,5 +78,15 @@ router.put('/:id', function (req, res, next) {
         })
     });
 });
-
+router.delete('/:id', function (req, res, next) {
+    debug('delete device with id', req.params.id);
+    mysql.connection(function (err, connection) {
+        if (err) next(err);
+        connection.query('DELETE FROM `devices` WHERE id = ?',[req.params.id], function (err, rows, fields) {
+            connection.release();
+            if (err) return next(err);
+            res.status(200).json();
+        })
+    });
+});
 module.exports = router;

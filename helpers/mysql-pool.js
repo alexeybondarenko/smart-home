@@ -10,6 +10,8 @@ var pool      =    mysql.createPool({
     debug    :  false
 });
 
+debug('creating mysql connection pool');
+
 function getConnection (cb) {
     pool.getConnection(function(err,connection){
         if (err) {
