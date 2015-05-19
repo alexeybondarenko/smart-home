@@ -1,4 +1,5 @@
 var express = require('express');
+var router  = express.Router();
 var path = require('path');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
@@ -6,6 +7,7 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var devices = require('./routes/devices');
+var logs = require('./routes/logs');
 
 var app = express();
 
@@ -16,9 +18,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use('/api', routes);
-app.use('/api', routes);
+
+//routes
+app.use('/', routes);
 app.use('/devices', devices);
+app.use('/logs', logs);
+
+app.use(function (req, res) {
+    res.setHeader('Content-Type', 'application/json');
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
